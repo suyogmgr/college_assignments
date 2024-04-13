@@ -1,36 +1,38 @@
 import numpy as np
 
-def wolfe_decomposition(A, b, c, D, d, x, pi, tol):
-    n = len(b)
+def lu_decomposition(a):
+    n = len(a)
+    l = np.zeros((n, n))
+    u = np.zeros((n, n))
+
+    for i in range(n):
+        u[i, i] = 1
+        l[i, i] = 1
+
+    for k in range(n - 1):
+        for i in range(k + 1, n):
+            l[i, k] = a[i, k] / a[k, k]
+            for j in range(k + 1, n):
+                a[i, j] -= l[i, k] * a[k, j]
+
     for i in range(n):
         for j in range(n):
-            if i == j:
-                pi[i] = c[i]
+            if j < i:
+                u[i, j] = 0
+            elif j == i:
+                u[i, j] = 1
             else:
-                pi[i] = 0
-        ck = sum(A[i][j] * pi[j] for j in range(n))
-        ak = b[i] - ck
-        cBBinv = sum(D[i][j] * pi[j] for j in range(n))
-        barcs = sum(ak[j] * cBBinv for j in range(n))
-        if abs(barcs) < tol:
-            x = [xi + ak[i] * cBBinv for i, xi in enumerate(x)]
-    return x
+                u[i, j] = a[i, j]
+            l[i, j] = a[i, j]
 
-def main():
-    n = 10
-    A = [list(map(float, input(f"Enter row {i+1} of A: ").split())) for i in range(n)]
-    b = [float(input(f"Enter b{i+1}: ")) for i in range(n)]
-    D = [list(map(float, input(f"Enter row {i+1} of D: ").split())) for i in range(n)]
-    d = [float(input(f"Enter d{i+1}: ")) for i in range(n)]
-    c = [float(input(f"Enter c{i+1}: ")) for i in range(n)]
-    x = [0.0] * n
-    pi = [0.0] * n
-    tol = 0.001
-    x = wolfe_decomposition(A, b, c, D, d, x, pi, tol)
-    print("The solution is:")
-    for i, xi in enumerate(x):
-        print(f"x[{i}] = {xi:.4f}")
+    return l, u
 
 
-main()
+a = np.array([[1, 3, 5], [2, 4, 7], [1, 1, 0]], dtype=float)
+l, u = lu_decomposition(a)
+
+print("L matrix:")
+print(l)
+print("\nU matrix:")
+print(u)
 print("Suyog Rana Magar")
